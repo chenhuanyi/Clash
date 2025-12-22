@@ -1,0 +1,75 @@
+
+
+# ===========================
+# OpenClash 配置文件模板
+# ===========================
+
+# 常规信息
+port: 7890               # HTTP 代理端口
+socks-port: 7891         # SOCKS5 代理端口
+redir-port: 7892         # 重定向端口
+tproxy-port: 7893        # TProxy 端口
+mode: Rule               # 代理模式: Rule / Global / Direct
+log-level: info          # 日志等级: info / warning / error / debug
+allow-lan: true          # 是否允许局域网连接
+bind-address: "*"        # 绑定地址（* 代表所有）
+external-controller: 0.0.0.0:9090   # 控制面板监听端口
+secret: ""               # 面板密钥（可选）
+
+# DNS 设置
+dns:
+  enable: true
+  listen: 0.0.0.0:1053
+  ipv6: false
+  enhanced-mode: fake-ip   # redir-host / fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://dns.alidns.com/dns-query
+    - https://doh.pub/dns-query
+  fallback:
+    - https://1.1.1.1/dns-query
+    - https://8.8.8.8/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: CN
+
+# 节点配置（示例）
+proxies:
+  
+  - {"type":"hysteria2","name":"裸云德国","server":"2a0f:b240:12:a3::b","port":38143,"password":"181a0ba9-5b0a-4175-9cc9-06f0d52330d5","sni":"www.bing.com","skip-cert-verify":true,"tfo":false}
+
+
+# 节点组
+
+
+proxy-groups:
+  - name: "自动选择"
+    type: url-test
+    proxies:
+      - "香港节点"
+      - "日本节点"
+    url: http://www.gstatic.com/generate_204
+    interval: 300
+
+  - name: "手动切换"
+    type: select
+    proxies:
+      - "自动选择"
+      - "香港节点"
+      - "日本节点"
+      - DIRECT
+
+  - name: "国内直连"
+    type: select
+    proxies:
+      - DIRECT
+      - "自动选择"
+
+# 规则
+rules:
+  - GEOIP,CN,国内直连
+  - MATCH,手动切换
+
